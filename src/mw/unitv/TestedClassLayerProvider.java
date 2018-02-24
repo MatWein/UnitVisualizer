@@ -4,19 +4,22 @@ import com.intellij.ide.IconLayerProvider;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class TestedClassLayerProvider implements IconLayerProvider {
+public class TestedClassLayerProvider implements IconLayerProvider, DumbAware {
 	private static final Icon ICON = IconLoader.getIcon("/UnitTested.png");
 	
 	private static final String TEST_CLASS_NAME_PATTERN = "%sTest";
@@ -29,7 +32,7 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 			if (iconable instanceof PsiClass) {
 				return calculateLayerIcon((PsiClass)iconable);
 			}
-		} catch (IndexNotReadyException | ProcessCanceledException ignored) {}
+		} catch (IndexNotReadyException | ProcessCanceledException | PsiInvalidElementAccessException ignored) {}
 		
 		return null;
 	}
@@ -37,6 +40,11 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 	@Nullable
 	private Icon calculateLayerIcon(@NotNull PsiClass psiClass) {
 		Project project = psiClass.getProject();
+		
+		DumbService dumbService = DumbService.getInstance(project);
+		if (dumbService == null || dumbService.isDumb()) {
+			return null;
+		}
 		
 		Module module = ModuleUtilCore.findModuleForPsiElement(psiClass);
 		if (module == null) {
@@ -58,10 +66,8 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 		GlobalSearchScope globalSearchScope = GlobalSearchScope.moduleScope(module);
 		
 		PsiClass[] matchingClasses = javaPsiFacade.findClasses(testClassName, globalSearchScope);
-		for (PsiClass matchingClass : matchingClasses) {
-			if (javaPsiFacade.arePackagesTheSame(psiClass, matchingClass)) {
-				return ICON;
-			}
+		if (matchingClasses.length > 0) {
+			return ICON;
 		}
 		
 		return null;
