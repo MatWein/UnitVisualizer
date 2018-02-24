@@ -1,0 +1,23 @@
+<idea-plugin>
+  <id>mw.unitv</id>
+  <name>UnitVisualizer</name>
+  <version>1.0</version>
+  <vendor email="matthias.weinert@dser.de" url="https://www.dser.de/">DSER</vendor>
+
+  <description><![CDATA[
+      After installing this plugin, each class will have a layered icon if the class has a corresponding unit test.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      Initial version.
+    ]]>
+  </change-notes>
+
+  <idea-version since-build="173.0"/>
+
+  <depends>com.intellij.modules.lang</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <iconLayerProvider implementation="mw.unitv.TestedClassLayerProvider"/>
+  </extensions>
+</idea-plugin>
