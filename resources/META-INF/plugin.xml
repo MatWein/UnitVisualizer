@@ -1,23 +1,28 @@
 <idea-plugin>
-  <id>mw.unitv</id>
-  <name>UnitVisualizer</name>
-  <version>1.0</version>
-  <vendor email="matthias.weinert@dser.de" url="https://www.dser.de/">DSER</vendor>
+    <id>mw.unitv</id>
+    <name>UnitVisualizer</name>
+    <version>1.1</version>
+    <vendor email="matthias.weinert@dser.de" url="https://www.dser.de/">DSER</vendor>
 
-  <description><![CDATA[
-      After installing this plugin, each class will have a layered icon if the class has a corresponding unit test.
+    <description><![CDATA[
+        Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse. <br/>
+        It provides also functionality to automatically move test classes when moving tested classes.
     ]]></description>
 
-  <change-notes><![CDATA[
-      Initial version.
+    <change-notes><![CDATA[
+        <p>1.1: Added sync test class movement and settings.</p>
+        <p>1.0: Initial version.</p>
     ]]>
-  </change-notes>
+    </change-notes>
 
-  <idea-version since-build="173.0"/>
+    <idea-version since-build="173.0"/>
 
-  <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.lang</depends>
 
-  <extensions defaultExtensionNs="com.intellij">
-    <iconLayerProvider implementation="mw.unitv.TestedClassLayerProvider"/>
-  </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <iconLayerProvider implementation="mw.unitv.TestedClassLayerProvider"/>
+        <refactoring.moveClassHandler implementation="mw.unitv.TestClassMoveHandler"/>
+        <projectService serviceInterface="mw.unitv.cfg.PluginConfig" serviceImplementation="mw.unitv.cfg.PluginConfig"/>
+        <projectConfigurable instance="mw.unitv.cfg.PluginConfigPanel" displayName="UnitVisualizer" groupId="tools"/>
+    </extensions>
 </idea-plugin>
