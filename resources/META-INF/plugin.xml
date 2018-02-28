@@ -2,7 +2,7 @@
     <id>mw.unitv</id>
     <name>UnitVisualizer</name>
     <version>1.1</version>
-    <vendor email="matthias.weinert@dser.de" url="https://www.dser.de/">DSER</vendor>
+    <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
 
     <description><![CDATA[
         Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse. <br/>
