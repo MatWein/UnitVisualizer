@@ -6,14 +6,13 @@
 
     <description><![CDATA[
         Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse. <br/>
-        It provides also functionality to automatically move test classes when moving tested classes.
+        It also provides functionality to automatically move test classes when moving tested classes.
     ]]></description>
 
     <change-notes><![CDATA[
         <p>1.1: Added sync test class movement and settings.</p>
         <p>1.0: Initial version.</p>
-    ]]>
-    </change-notes>
+    ]]></change-notes>
 
     <idea-version since-build="173.0"/>
 
