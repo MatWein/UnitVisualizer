@@ -1,5 +1,7 @@
 package mw.unitv;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
@@ -7,7 +9,10 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.refactoring.JavaRefactoringFactory;
 import com.intellij.refactoring.MoveClassesOrPackagesRefactoring;
 import com.intellij.refactoring.MoveDestination;
@@ -22,13 +27,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 public class TestClassMoveHandler implements MoveClassHandler, DumbAware {
 	private Queue<PsiClass> testClassesToMove = new LinkedList<>();
 	
 	@Override
-	public void prepareMove(@NotNull PsiClass psiClass) {
-		Project project = psiClass.getProject();
+	public void prepareMove(@NotNull PsiClass psiClassBeforeMove) {
+		Project project = psiClassBeforeMove.getProject();
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
 		if (pluginConfig == null) {
 			return;
@@ -38,13 +44,13 @@ public class TestClassMoveHandler implements MoveClassHandler, DumbAware {
 			return;
 		}
 		
-		PsiClass testClassToMove = TestClassDetector.findUniqueMatchingTestClass(psiClass);
+		PsiClass testClassToMove = TestClassDetector.findUniqueMatchingTestClass(psiClassBeforeMove);
 		testClassesToMove.add(testClassToMove);
 	}
 	
 	@Override
-	public void finishMoveClass(@NotNull PsiClass psiClass) {
-		Project project = psiClass.getProject();
+	public void finishMoveClass(@NotNull PsiClass psiClassAfterMove) {
+		Project project = psiClassAfterMove.getProject();
 		
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
 		if (pluginConfig == null) {
@@ -60,16 +66,16 @@ public class TestClassMoveHandler implements MoveClassHandler, DumbAware {
 			return;
 		}
 		
-		Module targetModule = ModuleUtilCore.findModuleForPsiElement(psiClass);
+		Module targetModule = ModuleUtilCore.findModuleForPsiElement(psiClassAfterMove);
 		if (targetModule == null) {
 			return;
 		}
 		
-		if (!(psiClass.getContainingFile() instanceof PsiJavaFile)) {
+		if (!(psiClassAfterMove.getContainingFile() instanceof PsiJavaFile)) {
 			return;
 		}
 		
-		PsiJavaFile containingFile = (PsiJavaFile)psiClass.getContainingFile();
+		PsiJavaFile containingFile = (PsiJavaFile)psiClassAfterMove.getContainingFile();
 		String packageName = containingFile.getPackageName();
 		
 		JavaRefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
@@ -77,7 +83,7 @@ public class TestClassMoveHandler implements MoveClassHandler, DumbAware {
 			return;
 		}
 		
-		VirtualFile destinationSourceRoot = findTestSourceRoot(targetModule, testClassToMove);
+		VirtualFile destinationSourceRoot = findTestSourceRoot(targetModule);
 		if (destinationSourceRoot == null) {
 			return;
 		}
@@ -95,37 +101,12 @@ public class TestClassMoveHandler implements MoveClassHandler, DumbAware {
 		DumbService.getInstance(project).smartInvokeLater(moveClassesOrPackages::run);
 	}
 	
-	private VirtualFile findTestSourceRoot(Module targetModule, PsiClass testClassToMove) {
-		VirtualFile[] sourceRoots = ModuleRootManager.getInstance(targetModule).getSourceRoots();
-		for (VirtualFile sourceRoot : sourceRoots) {
-			PsiFile containingFile = testClassToMove.getContainingFile();
-			if (containingFile == null) {
-				continue;
-			}
-			
-			PsiDirectory containingDirectory = containingFile.getContainingDirectory();
-			if (containingDirectory == null) {
-				continue;
-			}
-			
-			VirtualFile virtualFile = containingDirectory.getVirtualFile();
-			
-			String canonicalPath = virtualFile.getCanonicalPath();
-			if (canonicalPath == null) {
-				continue;
-			}
-			
-			String sourceRootCanonicalPath = sourceRoot.getCanonicalPath();
-			if (sourceRootCanonicalPath == null) {
-				continue;
-			}
-			
-			if (canonicalPath.startsWith(sourceRootCanonicalPath)) {
-				return sourceRoot;
-			}
-		}
+	private VirtualFile findTestSourceRoot(Module targetModule) {
+		Set<VirtualFile> allSourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(true));
+		Set<VirtualFile> sourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(false));
+		Set<VirtualFile> testSourceRoots = Sets.difference(allSourceRoots, sourceRoots);
 		
-		return null;
+		return Iterables.getFirst(testSourceRoots, null);
 	}
 	
 	@Nullable
