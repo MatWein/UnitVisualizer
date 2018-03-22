@@ -5,7 +5,7 @@
     <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
 
     <description><![CDATA[
-        Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse. <br/>
+        Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse.<br/>
         It also provides functionality to automatically move test classes when moving tested classes.
     ]]></description>
 

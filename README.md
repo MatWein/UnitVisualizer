@@ -3,7 +3,7 @@ Simple Intellij IDEA plugin to provide layered class icons for unit tested class
  
 It also provides functionality to automatically move test classes when moving tested classes.
 
-After installing the plugin you will something like this in the project view:  
+After installing the plugin you will see something like this in the project view:  
 ![Alt text](/screenshots/Screenshot1.png?raw=true "Screenshot 1")
 
 Simply move your classes and its tests will be moved automatically:  
