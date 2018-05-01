@@ -2,7 +2,6 @@ package mw.unitv;
 
 import com.intellij.ide.IconLayerProvider;
 import com.intellij.openapi.progress.ProcessCanceledException;
-import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
@@ -16,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class TestedClassLayerProvider implements IconLayerProvider, DumbAware {
+public class TestedClassLayerProvider implements IconLayerProvider {
 	private static final Icon ICON = IconLoader.getIcon("/UnitTested.png");
 	
 	private static final String LAYER_DESCRIPTION = "Tested class";
