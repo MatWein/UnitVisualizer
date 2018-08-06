@@ -20,6 +20,6 @@ public class PackageDetector {
 			return Optional.empty();
 		}
 		
-		return Optional.ofNullable(sourcePackage.getName());
+		return Optional.of(sourcePackage.getQualifiedName());
 	}
 }
