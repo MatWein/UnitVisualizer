@@ -4,10 +4,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 public class TestClassDetector {
 	private static final String TEST_CLASS_NAME_PATTERN = "%sTest";
@@ -37,18 +40,12 @@ public class TestClassDetector {
 			return null;
 		}
 		
-		JavaDirectoryService directoryService = JavaDirectoryService.getInstance();
-		if (directoryService == null) {
+		Optional<String> sourcePackage = PackageDetector.detectPackage(psiClass);
+		if (!sourcePackage.isPresent()) {
 			return null;
 		}
 		
-		PsiDirectory containingDirectory = psiClass.getContainingFile().getContainingDirectory();
-		PsiPackage sourcePackage = directoryService.getPackage(containingDirectory);
-		if (sourcePackage == null) {
-			return null;
-		}
-		
-		String psiClassName = String.format(PACKAGE_CLASS_PATTERN, sourcePackage.getName(), psiClass.getName());
+		String psiClassName = String.format(PACKAGE_CLASS_PATTERN, sourcePackage.get(), psiClass.getName());
 		String testClassName = String.format(TEST_CLASS_NAME_PATTERN, psiClassName);
 		
 		JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);

@@ -21,20 +21,22 @@ import com.intellij.refactoring.move.moveClassesOrPackages.MoveClassHandler;
 import com.intellij.usageView.UsageInfo;
 import com.intellij.util.IncorrectOperationException;
 import mw.unitv.cfg.PluginConfig;
+import mw.unitv.utils.PackageDetector;
 import mw.unitv.utils.TestClassDetector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 public class TestClassMoveHandler implements MoveClassHandler {
 	private Queue<PsiClass> testClassesToMove = new LinkedList<>();
 	
 	@Override
 	public void prepareMove(@NotNull PsiClass psiClassBeforeMove) {
+		prepareMove(psiClassBeforeMove, testClassesToMove);
+	}
+	
+	static void prepareMove(@NotNull PsiClass psiClassBeforeMove, Queue<PsiClass> testClassesToMove) {
 		Project project = psiClassBeforeMove.getProject();
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
 		if (pluginConfig == null) {
@@ -51,6 +53,10 @@ public class TestClassMoveHandler implements MoveClassHandler {
 	
 	@Override
 	public void finishMoveClass(@NotNull PsiClass psiClassAfterMove) {
+		finishMoveClass(psiClassAfterMove, testClassesToMove);
+	}
+	
+	static void finishMoveClass(@NotNull PsiClass psiClassAfterMove, Queue<PsiClass> testClassesToMove) {
 		Project project = psiClassAfterMove.getProject();
 		
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
@@ -82,8 +88,10 @@ public class TestClassMoveHandler implements MoveClassHandler {
 				return;
 			}
 			
-			PsiJavaFile containingFile = (PsiJavaFile) psiClassAfterMove.getContainingFile();
-			String packageName = containingFile.getPackageName();
+			Optional<String> packageName = PackageDetector.detectPackage(psiClassAfterMove);
+			if (!packageName.isPresent()) {
+				return;
+			}
 			
 			JavaRefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
 			if (factory == null) {
@@ -95,7 +103,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 				return;
 			}
 			
-			MoveDestination moveDestination = factory.createSourceRootMoveDestination(packageName, destinationSourceRoot);
+			MoveDestination moveDestination = factory.createSourceRootMoveDestination(packageName.get(), destinationSourceRoot);
 			if (moveDestination == null) {
 				return;
 			}
@@ -121,7 +129,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		}));
 	}
 	
-	private VirtualFile findTestSourceRoot(Module targetModule) {
+	private static VirtualFile findTestSourceRoot(Module targetModule) {
 		Set<VirtualFile> allSourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(true));
 		Set<VirtualFile> sourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(false));
 		Set<VirtualFile> testSourceRoots = Sets.difference(allSourceRoots, sourceRoots);
