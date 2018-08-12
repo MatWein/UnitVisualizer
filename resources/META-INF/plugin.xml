@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>mw.unitv</id>
     <name>UnitVisualizer</name>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
 
     <description><![CDATA[
@@ -10,6 +10,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <p>1.2.2: Fixed NPE.</p>
         <p>1.2.1: Fixed development bug in 1.2.</p>
         <p>1.2: Fixed move test classes did not work when moving resource files along with java files.</p>
         <p>1.1.4: Move test class on using quickfix for 'MoveToPackageFix'.</p>
