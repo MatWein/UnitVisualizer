@@ -1,5 +1,6 @@
 package mw.unitv;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
@@ -133,8 +134,9 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		Set<VirtualFile> allSourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(true));
 		Set<VirtualFile> sourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(false));
 		Set<VirtualFile> testSourceRoots = Sets.difference(allSourceRoots, sourceRoots);
-		
-		return Iterables.getFirst(testSourceRoots, null);
+		Collection<VirtualFile> javaTestSourceRoots = Collections2.filter(testSourceRoots, (o) -> o != null && o.toString().contains("src/test/java"));
+
+		return Iterables.getFirst(javaTestSourceRoots, null);
 	}
 	
 	@Nullable
