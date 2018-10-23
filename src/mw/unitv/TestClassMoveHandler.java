@@ -1,6 +1,5 @@
 package mw.unitv;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
@@ -26,6 +25,7 @@ import mw.unitv.utils.PackageDetector;
 import mw.unitv.utils.TestClassDetector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.model.java.JavaSourceRootType;
 
 import java.util.*;
 
@@ -131,12 +131,28 @@ public class TestClassMoveHandler implements MoveClassHandler {
 	}
 	
 	private static VirtualFile findTestSourceRoot(Module targetModule) {
-		Set<VirtualFile> allSourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(true));
-		Set<VirtualFile> sourceRoots = Sets.newHashSet(ModuleRootManager.getInstance(targetModule).getSourceRoots(false));
-		Set<VirtualFile> testSourceRoots = Sets.difference(allSourceRoots, sourceRoots);
-		Collection<VirtualFile> javaTestSourceRoots = Collections2.filter(testSourceRoots, (o) -> o != null && o.toString().contains("src/test/java"));
+		ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(targetModule);
+		if (moduleRootManager == null) {
+			return null;
+		}
 
-		return Iterables.getFirst(javaTestSourceRoots, null);
+		List<VirtualFile> allSourceRoots = moduleRootManager.getSourceRoots(JavaSourceRootType.TEST_SOURCE);
+
+		Set<VirtualFile> dependentTestSourceRoots = Sets.newHashSet();
+		if (allSourceRoots.size() == 1) {
+			return Iterables.getOnlyElement(allSourceRoots);
+		} else if (allSourceRoots.isEmpty()) {
+			List<Module> dependentModules = ModuleUtilCore.getAllDependentModules(targetModule);
+			for (Module dependentModule : dependentModules) {
+				dependentTestSourceRoots.add(findTestSourceRoot(dependentModule));
+			}
+
+			if (dependentTestSourceRoots.size() == 1) {
+				return Iterables.getOnlyElement(dependentTestSourceRoots);
+			}
+		}
+
+		return null;
 	}
 	
 	@Nullable

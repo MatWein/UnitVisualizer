@@ -53,8 +53,7 @@ public class TestClassDetector {
 			return null;
 		}
 		
-		GlobalSearchScope globalSearchScope = GlobalSearchScope.moduleScope(module);
-		
+		GlobalSearchScope globalSearchScope = GlobalSearchScope.moduleTestsWithDependentsScope(module);
 		return javaPsiFacade.findClasses(testClassName, globalSearchScope);
 	}
 }
