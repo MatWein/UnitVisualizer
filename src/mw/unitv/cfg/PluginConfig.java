@@ -6,11 +6,13 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @State(name = "UnitVisualizer", storages = { @Storage("UnitVisualizer.xml") })
 public class PluginConfig implements PersistentStateComponent<PluginConfig> {
 	private boolean useLayeredIcons = true;
+	private boolean useLayeredIconsOnMethods = true;
 	private boolean autoMoveTestClasses = true;
 	
 	@Nullable
@@ -20,7 +22,7 @@ public class PluginConfig implements PersistentStateComponent<PluginConfig> {
 	}
 	
 	@Override
-	public void loadState(PluginConfig singleFileExecutionConfig) {
+	public void loadState(@NotNull PluginConfig singleFileExecutionConfig) {
 		XmlSerializerUtil.copyBean(singleFileExecutionConfig, this);
 	}
 	
@@ -43,5 +45,13 @@ public class PluginConfig implements PersistentStateComponent<PluginConfig> {
 	
 	public void setAutoMoveTestClasses(boolean autoMoveTestClasses) {
 		this.autoMoveTestClasses = autoMoveTestClasses;
+	}
+
+	public boolean isUseLayeredIconsOnMethods() {
+		return useLayeredIconsOnMethods;
+	}
+
+	public void setUseLayeredIconsOnMethods(boolean useLayeredIconsOnMethods) {
+		this.useLayeredIconsOnMethods = useLayeredIconsOnMethods;
 	}
 }

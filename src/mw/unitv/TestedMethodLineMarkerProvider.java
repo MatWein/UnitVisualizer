@@ -46,7 +46,7 @@ public class TestedMethodLineMarkerProvider implements LineMarkerProvider {
             return null;
         }
 
-        if (!pluginConfig.isUseLayeredIcons()) {
+        if (!pluginConfig.isUseLayeredIconsOnMethods()) {
             return null;
         }
 

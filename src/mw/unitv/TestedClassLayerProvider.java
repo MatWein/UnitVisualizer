@@ -67,7 +67,7 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 			return null;
 		}
 
-		if (!pluginConfig.isUseLayeredIcons()) {
+		if (!pluginConfig.isUseLayeredIconsOnMethods()) {
 			return null;
 		}
 

@@ -17,6 +17,10 @@ import java.util.List;
 public class TestMethodDetector {
     @Nullable
     public static List<PsiMethod> findMatchingTestMethods(PsiMethod method) {
+        if (method.isConstructor()) {
+            return null;
+        }
+
         PsiClass containingClass = method.getContainingClass();
         if (containingClass == null) {
             return null;

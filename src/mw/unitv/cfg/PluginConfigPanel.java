@@ -15,7 +15,8 @@ public class PluginConfigPanel implements Configurable {
 	private final PluginConfig pluginConfig;
 	
 	private JCheckBox layeredIconCheckbox;
-	private JCheckBox moveTestclassCheckbox;
+	private JCheckBox layeredIconOnMethodsCheckbox;
+	private JCheckBox moveTestClassCheckbox;
 	
 	public PluginConfigPanel(@NotNull Project project) {
 		pluginConfig = PluginConfig.getInstance(project);
@@ -34,9 +35,12 @@ public class PluginConfigPanel implements Configurable {
 		
 		layeredIconCheckbox = new JCheckBox("Use layered icons for tested classes", pluginConfig.isUseLayeredIcons());
 		panel.add(layeredIconCheckbox);
+
+		layeredIconOnMethodsCheckbox = new JCheckBox("Use layered icons for tested methods", pluginConfig.isUseLayeredIconsOnMethods());
+		panel.add(layeredIconOnMethodsCheckbox);
 		
-		moveTestclassCheckbox = new JCheckBox("Automatically move test classes", pluginConfig.isAutoMoveTestClasses());
-		panel.add(moveTestclassCheckbox);
+		moveTestClassCheckbox = new JCheckBox("Automatically move test classes", pluginConfig.isAutoMoveTestClasses());
+		panel.add(moveTestClassCheckbox);
 		
 		return panel;
 	}
@@ -46,14 +50,16 @@ public class PluginConfigPanel implements Configurable {
 		boolean modified = false;
 		
 		modified |= layeredIconCheckbox.isSelected() != pluginConfig.isUseLayeredIcons();
-		modified |= moveTestclassCheckbox.isSelected() != pluginConfig.isAutoMoveTestClasses();
+		modified |= layeredIconOnMethodsCheckbox.isSelected() != pluginConfig.isUseLayeredIconsOnMethods();
+		modified |= moveTestClassCheckbox.isSelected() != pluginConfig.isAutoMoveTestClasses();
 		
 		return modified;
 	}
 	
 	@Override
 	public void apply() {
-		pluginConfig.setAutoMoveTestClasses(moveTestclassCheckbox.isSelected());
+		pluginConfig.setAutoMoveTestClasses(moveTestClassCheckbox.isSelected());
 		pluginConfig.setUseLayeredIcons(layeredIconCheckbox.isSelected());
+		pluginConfig.setUseLayeredIconsOnMethods(layeredIconOnMethodsCheckbox.isSelected());
 	}
 }
