@@ -8,6 +8,9 @@ After installing the plugin you will see something like this in the project view
 
 Simply move your classes and its tests will be moved automatically:  
 ![Alt text](/screenshots/Screenshot2.gif?raw=true "Screenshot 2")  
+
+The plugin will also show you icon layers on method level. So you can see if specific methods are tested and jump from method to test method.  
+![Alt text](/screenshots/Screenshot3.gif?raw=true "Screenshot 3")   
   
   
 **Installation instructions:**  

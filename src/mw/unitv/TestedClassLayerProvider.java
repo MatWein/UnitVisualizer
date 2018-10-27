@@ -8,12 +8,15 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiInvalidElementAccessException;
+import com.intellij.psi.PsiMethod;
 import mw.unitv.cfg.PluginConfig;
 import mw.unitv.utils.TestClassDetector;
+import mw.unitv.utils.TestMethodDetector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.List;
 
 public class TestedClassLayerProvider implements IconLayerProvider {
 	private static final Icon ICON = IconLoader.getIcon("/UnitTested.png");
@@ -26,6 +29,8 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 		try {
 			if (iconable instanceof PsiClass) {
 				return calculateLayerIcon((PsiClass)iconable);
+			} else if (iconable instanceof PsiMethod) {
+				return calculateLayerIcon((PsiMethod)iconable);
 			}
 		} catch (IndexNotReadyException | ProcessCanceledException | PsiInvalidElementAccessException ignored) {}
 		
@@ -51,6 +56,27 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 		}
 		
 		return null;
+	}
+
+	@Nullable
+	private Icon calculateLayerIcon(@NotNull PsiMethod psiMethod) {
+		Project project = psiMethod.getProject();
+
+		PluginConfig pluginConfig = PluginConfig.getInstance(project);
+		if (pluginConfig == null) {
+			return null;
+		}
+
+		if (!pluginConfig.isUseLayeredIcons()) {
+			return null;
+		}
+
+		List<PsiMethod> matchingTestMethods = TestMethodDetector.findMatchingTestMethods(psiMethod);
+		if (matchingTestMethods == null || matchingTestMethods.isEmpty()) {
+			return null;
+		}
+
+		return ICON;
 	}
 	
 	@NotNull

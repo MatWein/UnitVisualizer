@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>mw.unitv</id>
     <name>UnitVisualizer</name>
-    <version>1.3</version>
+    <version>1.4</version>
     <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
 
     <description><![CDATA[
@@ -10,6 +10,7 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <p>1.4: Added layered icons for tested methods.</p>
         <p>1.3: Added gradle support.</p>
         <p>1.2.3: Fixed bug that sometimes test classes will be moved to src/test/resources instead of src/test/java.</p>
         <p>1.2.2: Fixed NPE.</p>
@@ -33,5 +34,6 @@
         <moveFileHandler implementation="mw.unitv.TestClassMoveFileHandler"/>
         <projectService serviceInterface="mw.unitv.cfg.PluginConfig" serviceImplementation="mw.unitv.cfg.PluginConfig"/>
         <projectConfigurable instance="mw.unitv.cfg.PluginConfigPanel" displayName="UnitVisualizer" groupId="tools"/>
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="mw.unitv.TestedMethodLineMarkerProvider"/>
     </extensions>
 </idea-plugin>
