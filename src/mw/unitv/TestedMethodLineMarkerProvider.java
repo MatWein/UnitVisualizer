@@ -23,6 +23,22 @@ public class TestedMethodLineMarkerProvider implements LineMarkerProvider {
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
+//        return calculateSingleLineMarkerInfo(psiElement);
+        return null;
+    }
+
+    @Override
+    public void collectSlowLineMarkers(@NotNull List<PsiElement> list, @NotNull Collection<LineMarkerInfo> collection) {
+        for (PsiElement psiElement : list) {
+            LineMarkerInfo lineMarkerInfo = calculateSingleLineMarkerInfo(psiElement);
+            if (lineMarkerInfo != null) {
+                collection.add(lineMarkerInfo);
+            }
+        }
+    }
+
+    @Nullable
+    private LineMarkerInfo calculateSingleLineMarkerInfo(@NotNull PsiElement psiElement) {
         Project project = psiElement.getProject();
 
         PluginConfig pluginConfig = PluginConfig.getInstance(project);
@@ -51,7 +67,4 @@ public class TestedMethodLineMarkerProvider implements LineMarkerProvider {
 
         return null;
     }
-
-    @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> list, @NotNull Collection<LineMarkerInfo> collection) { }
 }

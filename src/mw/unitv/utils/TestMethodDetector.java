@@ -1,12 +1,18 @@
 package mw.unitv.utils;
 
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.search.LocalSearchScope;
+import com.intellij.psi.search.SearchScope;
+import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.util.Query;
+import org.fest.util.Lists;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TestMethodDetector {
     @Nullable
@@ -21,10 +27,18 @@ public class TestMethodDetector {
             return null;
         }
 
-        String originalMethodName = method.getName().toLowerCase();
+        SearchScope searchScope = new LocalSearchScope(uniqueMatchingTestClass);
+        Query<PsiReference> references = ReferencesSearch.search(method, searchScope);
 
-        return Arrays.stream(uniqueMatchingTestClass.getAllMethods())
-                .filter((m) -> m.getName().toLowerCase().contains(originalMethodName))
-                .collect(Collectors.toList());
+        List<PsiMethod> testMethods = Lists.newArrayList();
+        for (PsiReference reference : references) {
+            PsiElement element = reference.getElement();
+            PsiMethod callingTestMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            if (callingTestMethod != null) {
+                testMethods.add(callingTestMethod);
+            }
+        }
+
+        return testMethods;
     }
 }
