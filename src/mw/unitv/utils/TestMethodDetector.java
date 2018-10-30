@@ -9,9 +9,9 @@ import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.Query;
-import org.fest.util.Lists;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TestMethodDetector {
@@ -34,7 +34,7 @@ public class TestMethodDetector {
         SearchScope searchScope = new LocalSearchScope(uniqueMatchingTestClass);
         Query<PsiReference> references = ReferencesSearch.search(method, searchScope);
 
-        List<PsiMethod> testMethods = Lists.newArrayList();
+        List<PsiMethod> testMethods = new ArrayList<>();
         for (PsiReference reference : references) {
             PsiElement element = reference.getElement();
             PsiMethod callingTestMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
