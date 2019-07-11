@@ -1,7 +1,5 @@
 package mw.unitv;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
 import com.intellij.openapi.module.Module;
@@ -30,14 +28,14 @@ import org.jetbrains.jps.model.java.JavaSourceRootType;
 import java.util.*;
 
 public class TestClassMoveHandler implements MoveClassHandler {
-	private Queue<PsiClass> testClassesToMove = new LinkedList<>();
+	private Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
 	
 	@Override
 	public void prepareMove(@NotNull PsiClass psiClassBeforeMove) {
 		prepareMove(psiClassBeforeMove, testClassesToMove);
 	}
 	
-	static void prepareMove(@NotNull PsiClass psiClassBeforeMove, Queue<PsiClass> testClassesToMove) {
+	static void prepareMove(@NotNull PsiClass psiClassBeforeMove, Map<PsiClass, PsiClass> testClassesToMove) {
 		Project project = psiClassBeforeMove.getProject();
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
 		if (pluginConfig == null) {
@@ -49,7 +47,11 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		}
 		
 		PsiClass testClassToMove = TestClassDetector.findUniqueMatchingTestClass(psiClassBeforeMove);
-		testClassesToMove.add(testClassToMove);
+		if (testClassToMove == null) {
+			return;
+		}
+
+		testClassesToMove.put(psiClassBeforeMove, testClassToMove);
 	}
 	
 	@Override
@@ -57,7 +59,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		finishMoveClass(psiClassAfterMove, testClassesToMove);
 	}
 	
-	static void finishMoveClass(@NotNull PsiClass psiClassAfterMove, Queue<PsiClass> testClassesToMove) {
+	static void finishMoveClass(@NotNull PsiClass psiClassAfterMove, Map<PsiClass, PsiClass> testClassesToMove) {
 		Project project = psiClassAfterMove.getProject();
 		
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
@@ -69,7 +71,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			return;
 		}
 		
-		PsiClass testClassToMove = testClassesToMove.poll();
+		PsiClass testClassToMove = testClassesToMove.get(psiClassAfterMove);
 		if (testClassToMove == null) {
 			return;
 		}
@@ -138,9 +140,9 @@ public class TestClassMoveHandler implements MoveClassHandler {
 
 		List<VirtualFile> allSourceRoots = moduleRootManager.getSourceRoots(JavaSourceRootType.TEST_SOURCE);
 
-		Set<VirtualFile> dependentTestSourceRoots = Sets.newHashSet();
+		Set<VirtualFile> dependentTestSourceRoots = new HashSet<>();
 		if (allSourceRoots.size() == 1) {
-			return Iterables.getOnlyElement(allSourceRoots);
+			return allSourceRoots.get(0);
 		} else if (allSourceRoots.isEmpty()) {
 			List<Module> dependentModules = ModuleUtilCore.getAllDependentModules(targetModule);
 			for (Module dependentModule : dependentModules) {
@@ -148,7 +150,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			}
 
 			if (dependentTestSourceRoots.size() == 1) {
-				return Iterables.getOnlyElement(dependentTestSourceRoots);
+				return dependentTestSourceRoots.iterator().next();
 			}
 		}
 

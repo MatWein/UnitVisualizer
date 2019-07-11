@@ -8,13 +8,12 @@ import com.intellij.refactoring.move.moveClassesOrPackages.MoveJavaFileHandler;
 import com.intellij.util.IncorrectOperationException;
 import mw.unitv.utils.UniqueClassFromFileDetector;
 
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 
 public class TestClassMoveFileHandler extends MoveJavaFileHandler {
-	private Queue<PsiClass> testClassesToMove = new LinkedList<>();
+	private Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
 	
 	@Override
 	public void prepareMovedFile(PsiFile psiFileBeforeMove, PsiDirectory psiDirectory, Map<PsiElement, PsiElement> map) {
