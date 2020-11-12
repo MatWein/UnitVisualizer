@@ -23,12 +23,14 @@ public class TestedMethodLineMarkerProvider implements LineMarkerProvider {
     @Nullable
     @Override
     public LineMarkerInfo getLineMarkerInfo(@NotNull PsiElement psiElement) {
-//        return calculateSingleLineMarkerInfo(psiElement);
         return null;
     }
 
     @Override
-    public void collectSlowLineMarkers(@NotNull List<PsiElement> list, @NotNull Collection<LineMarkerInfo> collection) {
+    public void collectSlowLineMarkers(
+    		@NotNull List<PsiElement> list,
+		    @NotNull Collection<LineMarkerInfo> collection) {
+    	
         for (PsiElement psiElement : list) {
             LineMarkerInfo lineMarkerInfo = calculateSingleLineMarkerInfo(psiElement);
             if (lineMarkerInfo != null) {

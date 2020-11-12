@@ -1,0 +1,15 @@
+<idea-plugin>
+    <id>mw.unitv</id>
+    <name>UnitVisualizer</name>
+    <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <iconLayerProvider implementation="mw.unitv.TestedClassLayerProvider" />
+        <refactoring.moveClassHandler implementation="mw.unitv.TestClassMoveHandler" />
+        <moveFileHandler implementation="mw.unitv.TestClassMoveFileHandler" />
+        <projectService serviceInterface="mw.unitv.cfg.PluginConfig" serviceImplementation="mw.unitv.cfg.PluginConfig" />
+        <projectConfigurable instance="mw.unitv.cfg.PluginConfigPanel" displayName="UnitVisualizer" groupId="tools" />
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="mw.unitv.TestedMethodLineMarkerProvider" />
+        <refactoring.moveDirectoryWithClassesHelper implementation="mw.unitv.TestClassMoveDirectoryHandler" />
+    </extensions>
+</idea-plugin>
