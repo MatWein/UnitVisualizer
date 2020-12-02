@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.6.1]
+### Fixed
+- Allow plugin to be used with future versions of IDEA.
+
 ## [1.6.0]
 ### Added
 - Migrated plugin code to gradle project structure to match new IntelliJ plugin development SDK.
