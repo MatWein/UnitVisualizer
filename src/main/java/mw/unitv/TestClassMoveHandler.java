@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public class TestClassMoveHandler implements MoveClassHandler {
-	private Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+	private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
 	
 	@Override
 	public void prepareMove(@NotNull PsiClass psiClassBeforeMove) {
@@ -152,7 +152,11 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		} else if (allSourceRoots.isEmpty()) {
 			List<Module> dependentModules = ModuleUtilCore.getAllDependentModules(targetModule);
 			for (Module dependentModule : dependentModules) {
-				dependentTestSourceRoots.add(findTestSourceRoot(dependentModule));
+				VirtualFile testSourceRoot = findTestSourceRoot(dependentModule);
+				
+				if (testSourceRoot != null) {
+					dependentTestSourceRoots.add(testSourceRoot);
+				}
 			}
 
 			if (dependentTestSourceRoots.size() == 1) {

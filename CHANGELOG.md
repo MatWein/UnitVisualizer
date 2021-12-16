@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.6.2]
+### Fixed
+- Fixed bug in multi module gradle projects where test classes were not moved in some cases. See https://github.com/MatWein/UnitVisualizer/issues/1 for more information.
+
 ## [1.6.1]
 ### Fixed
 - Allow plugin to be used with future versions of IDEA.
