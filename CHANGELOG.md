@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.7.0]
+### Changed
+- Upgraded plugin to newest IDEA version 2021.3 and switched from deprecated APIs to newer ones.
+
 ## [1.6.2]
 ### Fixed
 - Fixed bug in multi module gradle projects where test classes were not moved in some cases. See https://github.com/MatWein/UnitVisualizer/issues/1 for more information.

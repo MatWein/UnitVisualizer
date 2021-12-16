@@ -28,7 +28,7 @@ public class PluginConfig implements PersistentStateComponent<PluginConfig> {
 	
 	@Nullable
 	public static PluginConfig getInstance(Project project) {
-		return ServiceManager.getService(project, PluginConfig.class);
+		return project.getService(PluginConfig.class);
 	}
 	
 	public boolean isUseLayeredIcons() {

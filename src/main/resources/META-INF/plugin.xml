@@ -1,8 +1,9 @@
-<idea-plugin>
+<idea-plugin require-restart="true">
     <id>mw.unitv</id>
     <name>UnitVisualizer</name>
     <vendor email="matthiasweinert@web.de" url="https://github.com/MatWein/UnitVisualizer">Matthias Weinert</vendor>
 
+    <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">

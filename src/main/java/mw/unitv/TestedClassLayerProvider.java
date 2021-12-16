@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.util.List;
 
 public class TestedClassLayerProvider implements IconLayerProvider {
-	private static final Icon ICON = IconLoader.getIcon("/UnitTested.png");
+	private static final Icon ICON = IconLoader.getIcon("/UnitTested.png", TestedClassLayerProvider.class);
 	
 	private static final String LAYER_DESCRIPTION = "Tested class";
 	
