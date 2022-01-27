@@ -10,10 +10,11 @@ import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class TestClassDetector {
-	private static final String TEST_CLASS_NAME_PATTERN = "%sTest";
+	private static final String[] TEST_CLASS_NAME_PATTERNS = new String[] { "%sTest", "%sTests" };
 	private static final String PACKAGE_CLASS_PATTERN = "%s.%s";
 	
 	@Nullable
@@ -41,19 +42,23 @@ public class TestClassDetector {
 		}
 		
 		Optional<String> sourcePackage = PackageDetector.detectPackage(psiClass);
-		if (!sourcePackage.isPresent()) {
+		if (sourcePackage.isEmpty()) {
 			return null;
 		}
-		
-		String psiClassName = String.format(PACKAGE_CLASS_PATTERN, sourcePackage.get(), psiClass.getName());
-		String testClassName = String.format(TEST_CLASS_NAME_PATTERN, psiClassName);
 		
 		JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
 		if (javaPsiFacade == null) {
 			return null;
 		}
 		
+		String psiClassName = String.format(PACKAGE_CLASS_PATTERN, sourcePackage.get(), psiClass.getName());
+		
 		GlobalSearchScope globalSearchScope = GlobalSearchScope.moduleTestsWithDependentsScope(module);
-		return javaPsiFacade.findClasses(testClassName, globalSearchScope);
+		
+		return Arrays.stream(TEST_CLASS_NAME_PATTERNS)
+				.map(pattern -> String.format(pattern, psiClassName))
+				.map(testClassToFind -> javaPsiFacade.findClasses(testClassToFind, globalSearchScope))
+				.flatMap(Arrays::stream)
+				.toArray(PsiClass[]::new);
 	}
 }

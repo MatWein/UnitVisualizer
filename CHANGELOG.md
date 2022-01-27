@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.7.1]
+### Added
+- Detect test classes with suffix "*Test" and "*Tests"
+
 ## [1.7.0]
 ### Changed
 - Upgraded plugin to newest IDEA version 2021.3 and switched from deprecated APIs to newer ones.
