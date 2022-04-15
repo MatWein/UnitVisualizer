@@ -2,6 +2,7 @@ package mw.unitv;
 
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
+import com.intellij.lang.Language;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
@@ -21,6 +22,7 @@ import com.intellij.util.IncorrectOperationException;
 import mw.unitv.cfg.PluginConfig;
 import mw.unitv.utils.PackageDetector;
 import mw.unitv.utils.TestClassDetector;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TestClassMoveHandler implements MoveClassHandler {
 	private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
@@ -98,7 +101,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			}
 			
 			Optional<String> packageName = PackageDetector.detectPackage(psiClassAfterMove);
-			if (!packageName.isPresent()) {
+			if (packageName.isEmpty()) {
 				return;
 			}
 			
@@ -107,7 +110,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 				return;
 			}
 			
-			VirtualFile destinationSourceRoot = findTestSourceRoot(targetModule);
+			VirtualFile destinationSourceRoot = findTestSourceRoot(targetModule, testClassToMove);
 			if (destinationSourceRoot == null) {
 				return;
 			}
@@ -138,21 +141,24 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		}));
 	}
 	
-	private static VirtualFile findTestSourceRoot(Module targetModule) {
+	private static VirtualFile findTestSourceRoot(Module targetModule, PsiClass testClassToMove) {
 		ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(targetModule);
 		if (moduleRootManager == null) {
 			return null;
 		}
 
 		List<VirtualFile> allSourceRoots = moduleRootManager.getSourceRoots(JavaSourceRootType.TEST_SOURCE);
-
+		return findTestSourceRootRecursive(targetModule, testClassToMove, allSourceRoots);
+	}
+	
+	private static VirtualFile findTestSourceRootRecursive(Module targetModule, PsiClass testClassToMove, List<VirtualFile> allSourceRoots) {
 		Set<VirtualFile> dependentTestSourceRoots = new HashSet<>();
 		if (allSourceRoots.size() == 1) {
 			return allSourceRoots.get(0);
 		} else if (allSourceRoots.isEmpty()) {
 			List<Module> dependentModules = ModuleUtilCore.getAllDependentModules(targetModule);
 			for (Module dependentModule : dependentModules) {
-				VirtualFile testSourceRoot = findTestSourceRoot(dependentModule);
+				VirtualFile testSourceRoot = findTestSourceRoot(dependentModule, testClassToMove);
 				
 				if (testSourceRoot != null) {
 					dependentTestSourceRoots.add(testSourceRoot);
@@ -162,8 +168,20 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			if (dependentTestSourceRoots.size() == 1) {
 				return dependentTestSourceRoots.iterator().next();
 			}
+		} else {
+			if (testClassToMove.getLanguage().is(Language.findLanguageByID("JAVA"))) {
+				List<VirtualFile> javaSourceRoots = allSourceRoots.stream()
+						.filter(sourceRoot -> StringUtils.containsAnyIgnoreCase(sourceRoot.getPath(), "/java", "\\java"))
+						.collect(Collectors.toList());
+				return findTestSourceRootRecursive(targetModule, testClassToMove, javaSourceRoots);
+			} else if (testClassToMove.getLanguage().is(Language.findLanguageByID("Groovy"))) {
+				List<VirtualFile> javaSourceRoots = allSourceRoots.stream()
+						.filter(sourceRoot -> StringUtils.containsAnyIgnoreCase(sourceRoot.getPath(), "/groovy", "\\groovy"))
+						.collect(Collectors.toList());
+				return findTestSourceRootRecursive(targetModule, testClassToMove, javaSourceRoots);
+			}
 		}
-
+		
 		return null;
 	}
 	

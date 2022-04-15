@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.7.2]
+### Added
+- Allow moving test classes when projects contain multiple test roots, for example java and groovy.
+
 ## [1.7.1]
 ### Added
 - Detect test classes with suffix "*Test" and "*Tests"
