@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class TestClassMoveFileHandler extends MoveJavaFileHandler {
-	private Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+	private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
 	
 	@Override
 	public void prepareMovedFile(PsiFile psiFileBeforeMove, PsiDirectory psiDirectory, Map<PsiElement, PsiElement> map) {

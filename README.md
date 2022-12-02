@@ -18,7 +18,4 @@ The plugin will also show you icon layers on method level. So you can see if spe
 **Installation instructions:**  
 *Use official repository*  
 https://plugins.jetbrains.com/plugin/10493-unitvisualizer  
-File > Settings > Plugins > Browse Repositories > UnitVisualizer  
-
-*Manual installation*    
-Copy the UnitVisualizer.jar file to: `~/.IntelliJIDEAx0/config/plugins` and restart your IDE.
+File > Settings > Plugins > UnitVisualizer

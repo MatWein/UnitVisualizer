@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.7.3]
+### Changed
+- Updated plugin for IDEA 2022.3
+
 ## [1.7.2]
 ### Added
 - Allow moving test classes when projects contain multiple test roots, for example java and groovy.

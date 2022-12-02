@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class TestClassMoveDirectoryHandler extends MoveDirectoryWithClassesHelper.Default {
-    private Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+    private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
 
     @Override
     public void beforeMove(PsiFile psiFileBeforeMove) {
