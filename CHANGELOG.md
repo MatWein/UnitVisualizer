@@ -1,5 +1,9 @@
 # UnitVisualizer Changelog
 
+## [1.8.0]
+### Changed
+- Updated plugin for IDEA 2024.3
+
 ## [1.7.3]
 ### Changed
 - Updated plugin for IDEA 2022.3

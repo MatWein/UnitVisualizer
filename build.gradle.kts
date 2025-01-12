@@ -1,12 +1,10 @@
-import org.jetbrains.changelog.Changelog
-import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 fun properties(key: String) = project.findProperty(key).toString()
 
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.10.0"
-    id("org.jetbrains.changelog") version "2.0.0"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
 }
 
 group = properties("pluginGroup")
@@ -14,18 +12,47 @@ version = properties("pluginVersion")
 
 repositories {
     mavenCentral()
+
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
-intellij {
-    pluginName.set(properties("pluginName"))
-    version.set(properties("platformVersion"))
-    type.set(properties("platformType"))
-    plugins.set(properties("platformPlugins").split(',').map(String::trim).filter(String::isNotEmpty))
+dependencies {
+    intellijPlatform {
+        intellijIdeaCommunity(properties("platformVersion"))
+        bundledPlugin("com.intellij.java")
+    }
 }
 
-changelog {
-    groups.set(emptyList())
-    repositoryUrl.set(properties("pluginRepositoryUrl"))
+intellijPlatform {
+    pluginConfiguration {
+        id = "mw.unitv"
+        name = properties("pluginName_")
+        version = properties("pluginVersion")
+        description =
+            """
+            Simple Intellij IDEA plugin to provide layered class icons for unit tested classes, similar to MoreUnit in Eclipse.<br/>
+            It also provides functionality to automatically move test classes when moving tested classes.
+            """.trimIndent()
+        changeNotes =
+            """
+            [1.8.0 - 2025-01-12]<br/>
+            Updated plugin for IDEA 2024.3
+            """.trimIndent()
+
+        ideaVersion {
+            untilBuild = provider { null }
+        }
+    }
+
+    pluginVerification {
+        ides {
+            ide(IntelliJPlatformType.IntellijIdeaCommunity, properties("platformVersion"))
+            ide(IntelliJPlatformType.IntellijIdeaUltimate, properties("platformVersion"))
+            recommended()
+        }
+    }
 }
 
 tasks {
@@ -34,34 +61,5 @@ tasks {
         targetCompatibility = properties("javaVersion")
     }
 
-    patchPluginXml {
-        version.set(properties("pluginVersion"))
-        sinceBuild.set(properties("pluginSinceBuild"))
-        untilBuild.set(properties("pluginUntilBuild"))
-
-        pluginDescription.set(
-                file("README.md").readText().lines().run {
-                    val start = "<!-- Plugin description -->"
-                    val end = "<!-- Plugin description end -->"
-
-                    if (!containsAll(listOf(start, end))) {
-                        throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
-                    }
-                    subList(indexOf(start) + 1, indexOf(end))
-                }.joinToString("\n").let { markdownToHTML(it) }
-        )
-
-        changeNotes.set(provider {
-            with(changelog) {
-                renderItem(
-                        getOrNull(properties("pluginVersion")) ?: getLatest(),
-                        Changelog.OutputType.HTML,
-                )
-            }
-        })
-    }
-
-    runPluginVerifier {
-        ideVersions.set(properties("pluginVerifierIdeVersions").split(',').map(String::trim).filter(String::isNotEmpty))
-    }
+    verifyPlugin {}
 }
