@@ -26,20 +26,27 @@ public class TestMethodDetector {
             return null;
         }
 
-        PsiClass uniqueMatchingTestClass = TestClassDetector.findUniqueMatchingTestClass(containingClass);
-        if (uniqueMatchingTestClass == null) {
+        if (SourceRootDetector.isInTestSourceRoot(containingClass)) {
             return null;
         }
 
-        SearchScope searchScope = new LocalSearchScope(uniqueMatchingTestClass);
-        Query<PsiReference> references = ReferencesSearch.search(method, searchScope);
+        PsiClass[] matchingTestClasses = TestClassDetector.findMatchingTestClasses(containingClass);
+        if (matchingTestClasses == null || matchingTestClasses.length == 0) {
+            return null;
+        }
 
         List<PsiMethod> testMethods = new ArrayList<>();
-        for (PsiReference reference : references) {
-            PsiElement element = reference.getElement();
-            PsiMethod callingTestMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            if (callingTestMethod != null) {
-                testMethods.add(callingTestMethod);
+
+        for (PsiClass matchingTestClass : matchingTestClasses) {
+            SearchScope searchScope = new LocalSearchScope(matchingTestClass);
+            Query<PsiReference> references = ReferencesSearch.search(method, searchScope);
+
+            for (PsiReference reference : references.findAll()) {
+                PsiElement element = reference.getElement();
+                PsiMethod callingTestMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+                if (callingTestMethod != null) {
+                    testMethods.add(callingTestMethod);
+                }
             }
         }
 

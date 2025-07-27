@@ -1,5 +1,7 @@
 package mw.unitv;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
@@ -8,12 +10,11 @@ import com.intellij.refactoring.move.moveClassesOrPackages.MoveJavaFileHandler;
 import com.intellij.util.IncorrectOperationException;
 import mw.unitv.utils.UniqueClassFromFileDetector;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class TestClassMoveFileHandler extends MoveJavaFileHandler {
-	private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+	private final Multimap<PsiClass, PsiClass> testClassesToMove = ArrayListMultimap.create();
 	
 	@Override
 	public void prepareMovedFile(PsiFile psiFileBeforeMove, PsiDirectory psiDirectory, Map<PsiElement, PsiElement> map) {

@@ -37,8 +37,9 @@ intellijPlatform {
             """.trimIndent()
         changeNotes =
             """
-            [1.8.0 - 2025-01-12]<br/>
-            Updated plugin for IDEA 2024.3
+            [1.9.0]<br/>
+            - Updated plugin for IDEA 2025.1<br/>
+            - Support integration tests using 'IT' as suffix 
             """.trimIndent()
 
         ideaVersion {

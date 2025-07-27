@@ -1,13 +1,14 @@
 package mw.unitv;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.AbstractProjectViewPane;
-import com.intellij.lang.Language;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
@@ -21,30 +22,23 @@ import com.intellij.usageView.UsageInfo;
 import com.intellij.util.IncorrectOperationException;
 import mw.unitv.cfg.PluginConfig;
 import mw.unitv.utils.PackageDetector;
+import mw.unitv.utils.SourceRootDetector;
 import mw.unitv.utils.TestClassDetector;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jps.model.java.JavaSourceRootType;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class TestClassMoveHandler implements MoveClassHandler {
-	private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+	private final Multimap<PsiClass, PsiClass> testClassesToMove = ArrayListMultimap.create();
 	
 	@Override
 	public void prepareMove(@NotNull PsiClass psiClassBeforeMove) {
 		prepareMove(psiClassBeforeMove, testClassesToMove);
 	}
 	
-	static void prepareMove(@NotNull PsiClass psiClassBeforeMove, Map<PsiClass, PsiClass> testClassesToMove) {
+	static void prepareMove(@NotNull PsiClass psiClassBeforeMove, Multimap<PsiClass, PsiClass> testClassesToMove) {
 		Project project = psiClassBeforeMove.getProject();
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
 		if (pluginConfig == null) {
@@ -55,12 +49,14 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			return;
 		}
 		
-		PsiClass testClassToMove = TestClassDetector.findUniqueMatchingTestClass(psiClassBeforeMove);
-		if (testClassToMove == null) {
+		PsiClass[] foundTestClassesToMove = TestClassDetector.findMatchingTestClasses(psiClassBeforeMove);
+		if (foundTestClassesToMove == null || foundTestClassesToMove.length == 0) {
 			return;
 		}
 
-		testClassesToMove.put(psiClassBeforeMove, testClassToMove);
+		for (PsiClass testClassToMove : foundTestClassesToMove) {
+			testClassesToMove.put(psiClassBeforeMove, testClassToMove);
+		}
 	}
 	
 	@Override
@@ -68,7 +64,7 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		finishMoveClass(psiClassAfterMove, testClassesToMove);
 	}
 	
-	static void finishMoveClass(@NotNull PsiClass psiClassAfterMove, Map<PsiClass, PsiClass> testClassesToMove) {
+	static void finishMoveClass(@NotNull PsiClass psiClassAfterMove, Multimap<PsiClass, PsiClass> testClassesToMove) {
 		Project project = psiClassAfterMove.getProject();
 		
 		PluginConfig pluginConfig = PluginConfig.getInstance(project);
@@ -80,8 +76,8 @@ public class TestClassMoveHandler implements MoveClassHandler {
 			return;
 		}
 		
-		PsiClass testClassToMove = testClassesToMove.get(psiClassAfterMove);
-		if (testClassToMove == null) {
+		Collection<PsiClass> foundTestClassesToMove = testClassesToMove.get(psiClassAfterMove);
+		if (foundTestClassesToMove == null || foundTestClassesToMove.isEmpty()) {
 			return;
 		}
 		
@@ -89,100 +85,58 @@ public class TestClassMoveHandler implements MoveClassHandler {
 		if (dumbService == null) {
 			return;
 		}
-		
-		dumbService.runWhenSmart(() -> dumbService.smartInvokeLater(() -> {
-			Module targetModule = ModuleUtilCore.findModuleForPsiElement(psiClassAfterMove);
-			if (targetModule == null) {
-				return;
-			}
-			
-			if (!(psiClassAfterMove.getContainingFile() instanceof PsiJavaFile)) {
-				return;
-			}
-			
-			Optional<String> packageName = PackageDetector.detectPackage(psiClassAfterMove);
-			if (packageName.isEmpty()) {
-				return;
-			}
-			
-			JavaRefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
-			if (factory == null) {
-				return;
-			}
-			
-			VirtualFile destinationSourceRoot = findTestSourceRoot(targetModule, testClassToMove);
-			if (destinationSourceRoot == null) {
-				return;
-			}
-			
-			MoveDestination moveDestination = factory.createSourceRootMoveDestination(packageName.get(), destinationSourceRoot);
-			if (moveDestination == null) {
-				return;
-			}
-			
-			MoveClassesOrPackagesRefactoring moveClassesOrPackages = factory.createMoveClassesOrPackages(new PsiElement[]{testClassToMove}, moveDestination);
-			if (moveClassesOrPackages == null) {
-				return;
-			}
-			
-			moveClassesOrPackages.run();
-			
-			ProjectView projectView = ProjectView.getInstance(project);
-			if (projectView == null) {
-				return;
-			}
-			
-			AbstractProjectViewPane currentProjectViewPane = projectView.getCurrentProjectViewPane();
-			if (currentProjectViewPane == null) {
-				return;
-			}
-			
-			currentProjectViewPane.updateFrom(psiClassAfterMove, false, true);
-		}));
-	}
-	
-	private static VirtualFile findTestSourceRoot(Module targetModule, PsiClass testClassToMove) {
-		ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(targetModule);
-		if (moduleRootManager == null) {
-			return null;
-		}
 
-		List<VirtualFile> allSourceRoots = moduleRootManager.getSourceRoots(JavaSourceRootType.TEST_SOURCE);
-		return findTestSourceRootRecursive(targetModule, testClassToMove, allSourceRoots);
-	}
-	
-	private static VirtualFile findTestSourceRootRecursive(Module targetModule, PsiClass testClassToMove, List<VirtualFile> allSourceRoots) {
-		Set<VirtualFile> dependentTestSourceRoots = new HashSet<>();
-		if (allSourceRoots.size() == 1) {
-			return allSourceRoots.get(0);
-		} else if (allSourceRoots.isEmpty()) {
-			List<Module> dependentModules = ModuleUtilCore.getAllDependentModules(targetModule);
-			for (Module dependentModule : dependentModules) {
-				VirtualFile testSourceRoot = findTestSourceRoot(dependentModule, testClassToMove);
-				
-				if (testSourceRoot != null) {
-					dependentTestSourceRoots.add(testSourceRoot);
-				}
-			}
+		dumbService.runWhenSmart(() -> ApplicationManager.getApplication().invokeLater(() -> {
+            Module targetModule = ModuleUtilCore.findModuleForPsiElement(psiClassAfterMove);
+            if (targetModule == null) {
+                return;
+            }
 
-			if (dependentTestSourceRoots.size() == 1) {
-				return dependentTestSourceRoots.iterator().next();
-			}
-		} else {
-			if (testClassToMove.getLanguage().is(Language.findLanguageByID("JAVA"))) {
-				List<VirtualFile> javaSourceRoots = allSourceRoots.stream()
-						.filter(sourceRoot -> StringUtils.containsAnyIgnoreCase(sourceRoot.getPath(), "/java", "\\java"))
-						.collect(Collectors.toList());
-				return findTestSourceRootRecursive(targetModule, testClassToMove, javaSourceRoots);
-			} else if (testClassToMove.getLanguage().is(Language.findLanguageByID("Groovy"))) {
-				List<VirtualFile> javaSourceRoots = allSourceRoots.stream()
-						.filter(sourceRoot -> StringUtils.containsAnyIgnoreCase(sourceRoot.getPath(), "/groovy", "\\groovy"))
-						.collect(Collectors.toList());
-				return findTestSourceRootRecursive(targetModule, testClassToMove, javaSourceRoots);
-			}
-		}
-		
-		return null;
+            if (!(psiClassAfterMove.getContainingFile() instanceof PsiJavaFile)) {
+                return;
+            }
+
+            Optional<String> packageName = PackageDetector.detectPackage(psiClassAfterMove);
+            if (packageName.isEmpty()) {
+                return;
+            }
+
+            JavaRefactoringFactory factory = JavaRefactoringFactory.getInstance(project);
+            if (factory == null) {
+                return;
+            }
+
+            for (PsiClass testClassToMove : foundTestClassesToMove) {
+                VirtualFile destinationSourceRoot = SourceRootDetector.findTestSourceRoot(targetModule, testClassToMove);
+                if (destinationSourceRoot == null) {
+                    continue;
+                }
+
+                MoveDestination moveDestination = factory.createSourceRootMoveDestination(packageName.get(), destinationSourceRoot);
+                if (moveDestination == null) {
+                    continue;
+                }
+
+                MoveClassesOrPackagesRefactoring moveClassesOrPackages = factory.createMoveClassesOrPackages(new PsiElement[]{testClassToMove}, moveDestination);
+                if (moveClassesOrPackages == null) {
+                    continue;
+                }
+
+                moveClassesOrPackages.run();
+            }
+
+            ProjectView projectView = ProjectView.getInstance(project);
+            if (projectView == null) {
+                return;
+            }
+
+            AbstractProjectViewPane currentProjectViewPane = projectView.getCurrentProjectViewPane();
+            if (currentProjectViewPane == null) {
+                return;
+            }
+
+            currentProjectViewPane.updateFrom(psiClassAfterMove, false, true);
+        }));
 	}
 	
 	@Nullable

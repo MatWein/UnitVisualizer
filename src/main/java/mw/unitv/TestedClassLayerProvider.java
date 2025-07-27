@@ -49,9 +49,9 @@ public class TestedClassLayerProvider implements IconLayerProvider {
 		if (!pluginConfig.isUseLayeredIcons()) {
 			return null;
 		}
-		
-		PsiClass matchingTestClass = TestClassDetector.findUniqueMatchingTestClass(psiClass);
-		if (matchingTestClass != null) {
+
+		PsiClass[] testClasses = TestClassDetector.findMatchingTestClasses(psiClass);
+		if (testClasses != null && testClasses.length > 0) {
 			return ICON;
 		}
 		

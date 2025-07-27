@@ -1,5 +1,12 @@
 # UnitVisualizer Changelog
 
+## [1.9.0]
+### Changed
+- Updated plugin for IDEA 2025.1
+- Support integration tests using 'IT' as suffix
+- Improved performance
+- Fixed StackOverflow exception
+
 ## [1.8.0]
 ### Changed
 - Updated plugin for IDEA 2024.3

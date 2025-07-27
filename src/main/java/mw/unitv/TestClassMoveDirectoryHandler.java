@@ -1,5 +1,7 @@
 package mw.unitv;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -11,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class TestClassMoveDirectoryHandler extends MoveDirectoryWithClassesHelper.Default {
-    private final Map<PsiClass, PsiClass> testClassesToMove = new HashMap<>();
+    private final Multimap<PsiClass, PsiClass> testClassesToMove = ArrayListMultimap.create();
 
     @Override
     public void beforeMove(PsiFile psiFileBeforeMove) {
